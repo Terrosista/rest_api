@@ -1,0 +1,90 @@
+import javax.sound.sampled.*;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.IOException;
+
+public class MusicPlayerApp extends JFrame implements ActionListener {
+    private Clip[] musicClips;
+    private int currentSongIndex;
+    private JButton playButton;
+    private JButton pauseButton;
+    private JButton nextButton;
+
+    public MusicPlayerApp() {
+        // Cargar las pistas de música (reemplaza las rutas con las rutas a tus archivos de música)
+        musicClips = new Clip[2];
+        musicClips[0] = createClip("path/to/song1.wav");
+        musicClips[1] = createClip("path/to/song2.wav");
+
+        currentSongIndex = 0;
+
+        // Crear botones
+        playButton = new JButton("Play");
+        playButton.addActionListener(this);
+
+        pauseButton = new JButton("Pause");
+        pauseButton.addActionListener(this);
+
+        nextButton = new JButton("Next");
+        nextButton.addActionListener(this);
+
+        // Agregar botones al JFrame
+        setLayout(new FlowLayout());
+        add(playButton);
+        add(pauseButton);
+        add(nextButton);
+
+        // Configurar el JFrame
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setSize(300, 100);
+        setTitle("Music Player");
+        setVisible(true);
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> new MusicPlayerApp());
+    }
+
+    public void actionPerformed(ActionEvent e) {
+        if (e.getSource() == playButton) {
+            playMusic();
+        } else if (e.getSource() == pauseButton) {
+            pauseMusic();
+        } else if (e.getSource() == nextButton) {
+            nextSong();
+        }
+    }
+
+    private void playMusic() {
+        if (musicClips[currentSongIndex].isActive()) {
+            musicClips[currentSongIndex].stop();
+        }
+        musicClips[currentSongIndex].setFramePosition(0);
+        musicClips[currentSongIndex].start();
+    }
+
+    private void pauseMusic() {
+        musicClips[currentSongIndex].stop();
+    }
+
+    private void nextSong() {
+        musicClips[currentSongIndex].stop();
+        currentSongIndex = (currentSongIndex + 1) % musicClips.length;
+        playMusic();
+    }
+
+    private Clip createClip(String filename) {
+        try {
+            AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(new File(filename).getAbsoluteFile());
+            Clip clip = AudioSystem.getClip();
+            clip.open(audioInputStream);
+            return clip;
+        } catch (IOException | LineUnavailableException | UnsupportedAudioFileException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+}
